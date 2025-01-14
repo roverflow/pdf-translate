@@ -71,11 +71,11 @@ async def create_translate_tasks(file: UploadFile, data: str = Form(...)):
         fileName = file.filename
         args = json.loads(data)
         out_lang = args.get("lang_out", "translated")
-        translated_file_path = os.path.join("static", fileName, f"{fileName}-{out_lang}.pdf")
+        translated_file_path = os.path.join("static", fileName, f"{fileName}-{out_lang}")
         
         # Check if the translation is already done
         if os.path.exists(translated_file_path):
-            return {"done": True}
+            return {"done": True, "translated_file": translated_file_path, "original_file": fileName}
         
         task = translate_task.delay(stream, args, fileName)
         return {"id": task.id}
@@ -109,14 +109,15 @@ async def get_translate_result(id: str, format: str):
     return {"state": result.state, "info": result.info}
 
 @app.get("/download/{file_name}")
-async def download_file(file_name: str):
+async def download_file(file_name: str, lang_out: str = "translated"):
     # Assuming files are stored in a directory named 'static' with subdirectories named after the file
     file_dir = os.path.join("static", file_name)
-    file_path = os.path.join(file_dir, f"{file_name}.pdf")
+    file_path = os.path.join(file_dir, f"{file_name}-{lang_out}")
+    final_path = f"{file_path}/{file_name}-mono.pdf"
     
     # Check if the file exists
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     
     # Return the file for download
-    return FileResponse(file_path, media_type="application/pdf", filename=f"{file_name}.pdf")
+    return FileResponse(final_path, media_type="application/pdf", filename=f"{file_name}-{lang_out}-mono.pdf")

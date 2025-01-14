@@ -101,7 +101,9 @@ const TranslationAndViewPDF = () => {
               setPolling(false);
               setLoading(false);
               setSecondPdf(
-                "http://127.0.0.1:8004/download/to-translate-mono.pdf"
+                `http://127.0.0.1:8004/download/${
+                  file.name.split(".")[0]
+                }?lang_out=${langOut}`
               );
             }
           })

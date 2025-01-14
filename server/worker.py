@@ -29,11 +29,13 @@ def create_task(task_type):
 
 @celery.task(name="translate_task")
 def translate_task(stream: bytes, args: dict, file_name: str):
-    orig_dir = os.path.join("static", file_name)
+    fileNameNew = file_name.split(".")[0]
+    orig_dir = os.path.join("static", fileNameNew)
     os.makedirs(orig_dir, exist_ok=True)
-    orig_file_path = os.path.join(orig_dir, f"{file_name}.pdf")
+    orig_file_path = os.path.join(orig_dir, file_name)
     out_lang = args.get("lang_out", "translated")
-    translated_file_path = os.path.join(orig_dir, f"{file_name}-{out_lang}.pdf")
+    translated_file_path = os.path.join(orig_dir, f"{fileNameNew}-{out_lang}")
+    os.makedirs(translated_file_path, exist_ok=True)
 
     try:
         bytes_io = io.BytesIO(stream)
@@ -46,6 +48,7 @@ def translate_task(stream: bytes, args: dict, file_name: str):
     try:
         doc_mono, doc_dual = translate(
             files=[orig_file_path],
+            output=translated_file_path,
             **args,
         )
         with open(translated_file_path, "wb") as f:
