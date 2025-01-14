@@ -1,0 +1,12 @@
+aiofiles
+celery
+fastapi
+flower
+Jinja2
+pytest
+redis
+requests
+uvicorn
+httpx
+tqdm
+pdf2zh
